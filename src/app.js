@@ -12,7 +12,6 @@ app.use(
 );
 // For limit of json coming
 app.use(express.json());
-app.use(bodyParser.urlencoded({ extended: true }));
 // For url encoded
 app.use(express.urlencoded({ extended: true, limit: "16kb" }));
 // For file upload

@@ -47,12 +47,13 @@ const userSchema = new Schema(
   { timestamps: true }
 );
 // Mongoose hook
-userSchema.pre("save", function (next) {
+userSchema.pre("save", async function (next) {
   // Check if password has been modified if modified then use this logic
   if (!this.isModified("password")) return next();
 
   // Logic to hash password
-  this.password = bcrypt.hash(this.password, 10);
+  this.password = await bcrypt.hash(this.password, 10);
+  console.log(this.password)
   next();
 });
 

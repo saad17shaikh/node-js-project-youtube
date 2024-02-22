@@ -12,12 +12,12 @@ export const cloudinaryUpload = async (localFilePath) => {
       resource_type: "auto",
     });
     // If file has been uploaded successfully then remove it on from local server
-    fs.unlink(localFilePath);
+    fs.unlinkSync(localFilePath);
     return response;
   } catch (error) {
     console.log(error);
     // Remove from local if operation is failed
-    fs.unlink(localFilePath);
+    fs.unlinkSync(localFilePath);
     return null;
   }
 };
