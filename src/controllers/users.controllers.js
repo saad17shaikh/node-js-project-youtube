@@ -54,3 +54,44 @@ export const userRegister = async (req, res) => {
     console.log(error);
   }
 };
+
+export const userLogin = async (req, res) => {
+  try {
+    const { username, email, password } = req.body;
+    // Step 1. check if username or email is there or not
+    if (!(username || email)) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Username or Email is required" });
+    }
+    // Step 2. Find user with email or password and if empty then return error
+    const user = await User.findOne({
+      $or: [{ username }, { email }],
+    });
+
+    if (!user) {
+      return res
+        .status(300)
+        .json({ success: false, message: "User does not exist" });
+    }
+    // console.log(user)
+    // Compare frontend and backend password
+    const isPasswordCorrect = await user.isPasswordCorrect(password);
+    const clientError = (field, message) => {
+      if (!field) {
+        return res.status(300).json({ success: false, message: message });
+      }
+    };
+    clientError(isPasswordCorrect, "Password Incorrect");
+    // if (!isPasswordCorrect) {
+    //   return res
+    //     .status(300)
+    //     .json({ success: false, message: "Password incorrect" });
+    // }
+    return res
+      .status(200)
+      .json({ success: true, message: "Login Successfull" });
+  } catch (error) {
+    console.log(error);
+  }
+};
