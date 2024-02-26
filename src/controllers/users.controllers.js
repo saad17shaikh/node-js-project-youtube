@@ -119,16 +119,43 @@ export const userLogout = async (req, res) => {
       { new: true } // If not done then it will give old response
     );
 
-    return res
-      .status(200)
-      // Clearing the cookies
-      .clearCookie("accessToken", { httpOnly: true, secure: true })
-      .clearCookie("refreshToken", { httpOnly: true, secure: true })
-      .json({ success: true, message: "Logout Successfull" });
+    return (
+      res
+        .status(200)
+        // Clearing the cookies
+        .clearCookie("accessToken", { httpOnly: true, secure: true })
+        .clearCookie("refreshToken", { httpOnly: true, secure: true })
+        .json({ success: true, message: "Logout Successfull" })
+    );
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const changePassword = async (req, res) => {
+  try {
+    const { oldPassword, newPassword } = req.body;
+    if (!oldPassword && !newPassword) {
+      return res
+        .status(300)
+        .json({ success: false, message: "please provide credentials" });
+    }
+
+    const user = await User.findById(req?.user?._id);
+
+    // Compare new password with old Password
+    const passwordCorrect = await user.isPasswordCorrect(oldPassword);
+    if (!passwordCorrect) {
+      return res
+        .status(300)
+        .json({ success: false, message: "Invalid Password" });
+    }
+    user.password = newPassword;
+    await user.save({ validateBeforeSave: false });
 
     return res
-      .status(200)
-      .json({ success: true, message: "Logout successfull" });
+      .status(300)
+      .json({ success: true, message: "Password has been changed" });
   } catch (error) {
     console.log(error);
   }

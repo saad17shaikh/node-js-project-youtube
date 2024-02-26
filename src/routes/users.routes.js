@@ -1,5 +1,6 @@
 import { Router } from "express";
 import {
+  changePassword,
   userLogin,
   userLogout,
   userRegister,
@@ -21,5 +22,7 @@ router.post(
 // Login User
 router.post("/login", userLogin);
 // Logout User
-router.post("/logout", verifyUser,userLogout);
+router.post("/logout", verifyUser, userLogout);
+// Change Password
+router.post("/changePassword", verifyUser, changePassword);
 export default router;
