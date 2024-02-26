@@ -1,3 +1,4 @@
+import { response } from "express";
 import { User } from "../models/users.models.js";
 import { cloudinaryUpload } from "../utils/cloudinary.methods.js";
 export const userRegister = async (req, res) => {
@@ -77,20 +78,57 @@ export const userLogin = async (req, res) => {
     // console.log(user)
     // Compare frontend and backend password
     const isPasswordCorrect = await user.isPasswordCorrect(password);
-    const clientError = (field, message) => {
-      if (!field) {
-        return res.status(300).json({ success: false, message: message });
-      }
-    };
-    clientError(isPasswordCorrect, "Password Incorrect");
-    // if (!isPasswordCorrect) {
-    //   return res
-    //     .status(300)
-    //     .json({ success: false, message: "Password incorrect" });
-    // }
+
+    if (!isPasswordCorrect) {
+      return res
+        .status(300)
+        .json({ success: false, message: "Password incorrect" });
+    }
+    // Generate cookies
+    // 1. Generate access token
+    const accessToken = await user.generateAccessToken();
+    const refreshToken = await user.generateRefreshToken();
+    // Save in database
+    // console.log(user.refreshToken)
+    user.refreshToken = refreshToken;
+
+    await user.save({ validateBeforeSave: false });
+
+    const loggedInUser = await User.findById(user._id).select(
+      "-password -refreshToken"
+    );
+
     return res
       .status(200)
-      .json({ success: true, message: "Login Successfull" });
+      .cookie("accessToken", accessToken, { httpOnly: true, secure: true })
+      .cookie("refreshToken", refreshToken, { httpOnly: true, secure: true })
+      .json({ success: true, message: "Login Successfull", loggedInUser });
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const userLogout = async (req, res) => {
+  try {
+    // This method is used to directly find and update
+    await User.findByIdAndUpdate(
+      req.user._id,
+      {
+        $unset: { refreshToken: 1 }, // this removes the field from document
+      },
+      { new: true } // If not done then it will give old response
+    );
+
+    return res
+      .status(200)
+      // Clearing the cookies
+      .clearCookie("accessToken", { httpOnly: true, secure: true })
+      .clearCookie("refreshToken", { httpOnly: true, secure: true })
+      .json({ success: true, message: "Logout Successfull" });
+
+    return res
+      .status(200)
+      .json({ success: true, message: "Logout successfull" });
   } catch (error) {
     console.log(error);
   }
