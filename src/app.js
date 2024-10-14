@@ -6,7 +6,7 @@ export const app = express();
 // For cors
 app.use(
   cors({
-    origin: process.env.ORIGIN,
+    origin: true,
     credentials: true,
   })
 );

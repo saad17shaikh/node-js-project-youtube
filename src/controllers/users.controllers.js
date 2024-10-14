@@ -59,6 +59,7 @@ export const userRegister = async (req, res) => {
 export const userLogin = async (req, res) => {
   try {
     const { username, email, password } = req.body;
+    console.log(req.body)
     // Step 1. check if username or email is there or not
     if (!(username || email)) {
       return res
@@ -69,13 +70,11 @@ export const userLogin = async (req, res) => {
     const user = await User.findOne({
       $or: [{ username }, { email }],
     });
-
     if (!user) {
       return res
         .status(300)
         .json({ success: false, message: "User does not exist" });
     }
-    // console.log(user)
     // Compare frontend and backend password
     const isPasswordCorrect = await user.isPasswordCorrect(password);
 
@@ -156,6 +155,15 @@ export const changePassword = async (req, res) => {
     return res
       .status(300)
       .json({ success: true, message: "Password has been changed" });
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const testData = async (req, res) => {
+  try {
+    console.log(req.body);
+    return res.status(200).json({ success: true, message: "success" });
   } catch (error) {
     console.log(error);
   }
